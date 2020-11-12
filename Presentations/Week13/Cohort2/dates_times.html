@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>R for Data Science Book Club</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Havva Yalinca" />
+    <meta name="date" content="2020-11-02" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# R for Data Science Book Club
+## Chapter 16 - Dates and times
+### Havva Yalinca
+### R4DS Online Learning Community
+### 2020-11-02
+
+---
+
+
+
+## Dates and times in R
+
+Dates and times come in many different formats.
+
+* DMY: e.g. "31.1.17", "31/01/2017"
+* MDY: e.g. "January 31st, 2017"
+* YMD: e.g. "2017-01-31"
+
+&lt;img src="https://upload.wikimedia.org/wikipedia/commons/9/97/Date_format_by_country_NEW.svg" width="100%" /&gt;
+
+---
+
+## Sources of dates and times
+
+
+### 1. From a string.
+#### Dates
+
+```r
+ymd("2017-01-31") # or ymd(20170131)
+```
+
+```
+## [1] "2017-01-31"
+```
+
+```r
+mdy("January 31st, 2017")
+```
+
+```
+## [1] "2017-01-31"
+```
+
+```r
+dmy("31-Jan-2017")
+```
+
+```
+## [1] "2017-01-31"
+```
+
+
+---
+
+## Sources of dates and times in R
+
+
+### 1. From a string
+#### Times
+
+
+```r
+ymd_hms("2017-01-31 20:11:59")
+```
+
+```
+## [1] "2017-01-31 20:11:59 UTC"
+```
+
+```r
+mdy_hm("01/31/2017 08:01")
+```
+
+```
+## [1] "2017-01-31 08:01:00 UTC"
+```
+
+```r
+ymd(20170131, tz = "UTC")
+```
+
+```
+## [1] "2017-01-31 UTC"
+```
+
+---
+
+### 2. From individual components - using `make_date()`
+
+
+```r
+flights %&gt;% 
+  select(year, month, day, hour, minute) %&gt;%
+  mutate(departure = make_datetime(year, month, 
+                                   day, hour, minute))
+```
+
+```
+## # A tibble: 336,776 x 6
+##     year month   day  hour minute departure          
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dttm&gt;             
+##  1  2013     1     1     5     15 2013-01-01 05:15:00
+##  2  2013     1     1     5     29 2013-01-01 05:29:00
+##  3  2013     1     1     5     40 2013-01-01 05:40:00
+##  4  2013     1     1     5     45 2013-01-01 05:45:00
+##  5  2013     1     1     6      0 2013-01-01 06:00:00
+##  6  2013     1     1     5     58 2013-01-01 05:58:00
+##  7  2013     1     1     6      0 2013-01-01 06:00:00
+##  8  2013     1     1     6      0 2013-01-01 06:00:00
+##  9  2013     1     1     6      0 2013-01-01 06:00:00
+## 10  2013     1     1     6      0 2013-01-01 06:00:00
+## # ... with 336,766 more rows
+```
+
+
+---
+
+### 3. From an existing date/time object
+
+You can switch between dates and date-times.
+
+
+```r
+as_datetime(today())
+```
+
+```
+## [1] "2020-11-02 UTC"
+```
+
+```r
+as_date(now())
+```
+
+```
+## [1] "2020-11-02"
+```
+
+Converting a Unix Epoch to date or datetime.
+
+
+```r
+as_datetime(60 * 60 * 10)
+```
+
+```
+## [1] "1970-01-01 10:00:00 UTC"
+```
+
+```r
+as_date(365 * 10 + 2)
+```
+
+```
+## [1] "1980-01-01"
+```
+
+---
+
+## Date-time components - as integers
+
+You can extract a date or time component from a datetime object.
+
+```r
+datetime &lt;- ymd_hms("2020-11-02 12:34:56")
+
+year(datetime)
+```
+
+```
+## [1] 2020
+```
+
+```r
+month(datetime)
+```
+
+```
+## [1] 11
+```
+
+```r
+mday(datetime)
+```
+
+```
+## [1] 2
+```
+
+```r
+wday(datetime)
+```
+
+```
+## [1] 2
+```
+
+---
+
+## Date-time components - as strings
+
+You can extract a named day or month from a datetime object.
+
+```r
+month(datetime, label = TRUE)
+```
+
+```
+## [1] Nov
+## 12 Levels: Jan &lt; Feb &lt; Mar &lt; Apr &lt; May &lt; Jun &lt; Jul &lt; Aug &lt; Sep &lt; Oct &lt; ... &lt; Dec
+```
+
+```r
+wday(datetime, label = TRUE, abbr = FALSE)
+```
+
+```
+## [1] Monday
+## 7 Levels: Sunday &lt; Monday &lt; Tuesday &lt; Wednesday &lt; Thursday &lt; ... &lt; Saturday
+```
+
+---
+
+## Rounding to the nearest component
+
+You can round a date or datetime object to the nearest component, such as month. Similar to rounding floats, `round`, `ceiling` and `floor` options exist (followed by `_date` suffix for dates and datetimes.
+
+
+```r
+floor_date(ymd(20201102), "month")
+```
+
+```
+## [1] "2020-11-01"
+```
+
+```r
+ceiling_date(ymd(20201102), "month")
+```
+
+```
+## [1] "2020-12-01"
+```
+
+```r
+round_date(ymd(20201102), "month") # down
+```
+
+```
+## [1] "2020-11-01"
+```
+
+```r
+round_date(ymd(20201122), "month") # up
+```
+
+```
+## [1] "2020-12-01"
+```
+
+---
+
+## Setting individual components
+
+You can also change an individual component of a date or datetime object.
+
+
+```r
+(datetime &lt;- ymd_hms("2016-07-08 12:34:56"))
+```
+
+```
+## [1] "2016-07-08 12:34:56 UTC"
+```
+
+```r
+year(datetime) &lt;- 2020
+datetime
+```
+
+```
+## [1] "2020-07-08 12:34:56 UTC"
+```
+
+```r
+month(datetime) &lt;- 01
+datetime
+```
+
+```
+## [1] "2020-01-08 12:34:56 UTC"
+```
+
+```r
+hour(datetime) &lt;- hour(datetime) + 1
+datetime
+```
+
+```
+## [1] "2020-01-08 13:34:56 UTC"
+```
+
+---
+
+## Updating dates and datetimes
+
+Another way of creating or updating a date or datetime is by using the `update()` function.
+
+
+```r
+update(datetime, year = 2020, month = 2, mday = 2, hour = 2)
+```
+
+```
+## [1] "2020-02-02 02:34:56 UTC"
+```
+
+```r
+#If values are too big, they will roll-over
+ymd("2015-02-01") %&gt;% 
+  update(mday = 30) #
+```
+
+```
+## [1] "2015-03-02"
+```
+
+```r
+ymd("2015-02-01") %&gt;% 
+  update(hour = 400)
+```
+
+```
+## [1] "2015-02-17 16:00:00 UTC"
+```
+
+
+---
+
+## Time spans
+
+The `lubridate` package also allows us to do arithmetic with dates and datetimes.
+
+--
+
+There are 3 main classes of time spans supported by lubridate:
+* durations: which represent an exact number of seconds.
+* periods, which represent human units like weeks and months.
+* intervals, which represent a starting and ending point.
+ 
+
+```r
+# How old is Hadley?
+h_age &lt;- today() - ymd(19791014)
+h_age
+```
+
+```
+## Time difference of 14995 days
+```
+
+```r
+as.duration(h_age)
+```
+
+```
+## [1] "1295568000s (~41.05 years)"
+```
+
+---
+
+## Duration constructors
+
+There are constructors for converting from other components into durations.
+
+Caution: These functions use standard lengths - they don't take leap years and daylight saving time changes into account.
+
+
+```r
+dseconds(15)
+#&gt; [1] "15s"
+dminutes(10)
+#&gt; [1] "600s (~10 minutes)"
+dhours(c(12, 24))
+#&gt; [1] "43200s (~12 hours)" "86400s (~1 days)"
+ddays(0:5)
+#&gt; [1] "0s"                "86400s (~1 days)"  "172800s (~2 days)"
+#&gt; [4] "259200s (~3 days)" "345600s (~4 days)" "432000s (~5 days)"
+dweeks(3)
+#&gt; [1] "1814400s (~3 weeks)"
+dyears(1)
+#&gt; [1] "31557600s (~1 years)"
+```
+
+---
+
+## Duration arithmetic
+
+
+```r
+2 * dyears(1)
+```
+
+```
+## [1] "63115200s (~2 years)"
+```
+
+```r
+dyears(1) + dweeks(12) + dhours(15)
+```
+
+```
+## [1] "38869200s (~1.23 years)"
+```
+
+```r
+(tomorrow &lt;- today() + ddays(1))
+```
+
+```
+## [1] "2020-11-03"
+```
+
+```r
+(last_year &lt;- today() - dyears(1))
+```
+
+```
+## [1] "2019-11-02 18:00:00 UTC"
+```
+
+---
+
+## Periods
+Periods are time spans but don’t have a fixed length in seconds, instead they work with “human” times, like days and months.
+
+
+```r
+one_pm &lt;- ymd_hms("2016-03-12 13:00:00")
+one_pm + days(1)
+```
+
+```
+## [1] "2016-03-13 13:00:00 UTC"
+```
+
+---
+
+## Period constructors
+
+Periods can be constructed in a similar way to durations.
+
+```r
+seconds(15)
+#&gt; [1] "15S"
+minutes(10)
+#&gt; [1] "10M 0S"
+hours(c(12, 24))
+#&gt; [1] "12H 0M 0S" "24H 0M 0S"
+days(7)
+#&gt; [1] "7d 0H 0M 0S"
+months(1:6)
+#&gt; [1] "1m 0d 0H 0M 0S" "2m 0d 0H 0M 0S" "3m 0d 0H 0M 0S" "4m 0d 0H 0M 0S"
+#&gt; [5] "5m 0d 0H 0M 0S" "6m 0d 0H 0M 0S"
+weeks(3)
+#&gt; [1] "21d 0H 0M 0S"
+years(1)
+#&gt; [1] "1y 0m 0d 0H 0M 0S"
+```
+
+
+---
+
+## Period arithmetic - 1
+
+Periods can be added and multiplied as well as being added to dates, like durations.
+
+```r
+10 * (months(6) + days(1))
+#&gt; [1] "60m 10d 0H 0M 0S"
+days(50) + hours(25) + minutes(2)
+#&gt; [1] "50d 25H 2M 0S"
+```
+
+
+---
+
+## Period arithmetic - 2
+
+Periods obey rules about time zones and daylight saving time.
+
+
+```r
+# A leap year
+ymd("2016-01-01") + dyears(1)
+#&gt; [1] "2016-12-31 06:00:00 UTC"
+ymd("2016-01-01") + years(1)
+#&gt; [1] "2017-01-01"
+
+# Daylight Savings Time
+one_pm + ddays(1)
+#&gt; [1] "2016-03-13 14:00:00 EDT"
+one_pm + days(1)
+#&gt; [1] "2016-03-13 13:00:00 EDT"
+```
+
+
+---
+
+## Intervals
+
+An interval is a duration with a starting point: that makes it precise so you can determine exactly how long it is.
+
+```r
+next_year &lt;- today() + years(1)
+(today() %--% next_year) / ddays(1)
+```
+
+```
+## [1] 365
+```
+
+```r
+# To find out how many periods fall into an interval, 
+#  you need to use integer division:
+
+(today() %--% next_year) %/% days(1)
+```
+
+```
+## [1] 365
+```
+
+
+
+---
+
+## Summary of arithmetic with datetime classes
+
+&gt; How do you pick between duration, periods, and intervals? As always, pick the simplest data structure that solves your problem. If you only care about physical time, use a duration; if you need to add human times, use a period; if you need to figure out how long a span is in human units, use an interval.
+
+&lt;img src="https://d33wubrfki0l68.cloudfront.net/0020136325ea844476bc61eb7e95d2ac5aeebf00/893e9/diagrams/datetimes-arithmetic.png" width="100%" /&gt;
+
+
+---
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
